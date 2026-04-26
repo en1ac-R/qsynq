@@ -1,0 +1,31 @@
+@startuml
+left to right direction
+skinparam shadowing false
+
+actor User as "Пользователь"
+actor Peer as "Удалённое устройство"
+
+rectangle "File Sync System" {
+
+    (Управление папками) as Folder
+    (Подключение устройства) as Connect
+    (Синхронизация) as Sync
+    (Обнаружение изменений) as Detect
+    (Разрешение конфликтов) as Conflict
+    (Аутентификация) as Auth
+}
+
+' --- акторы ---
+User -- Folder
+User -- Connect
+User -- Sync
+
+Peer -- Sync
+Peer -- Connect
+
+' --- логика ---
+Sync .> Detect : <<include>>
+Conflict .> Sync : <<extend>>
+Connect .> Auth : <<include>>
+
+@enduml
