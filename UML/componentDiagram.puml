@@ -1,0 +1,59 @@
+@startuml
+left to right direction
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+package "CLI / Interface" {
+    [CLI]
+    [Config Manager]
+}
+
+package "Core" {
+    [Sync Manager]
+    [Sync Protocol]
+    [Scheduler]
+}
+
+package "File System Layer" {
+    [File Scanner]
+    [File Watcher]
+    [Index DB]
+}
+
+package "Logic" {
+    [Diff Engine]
+    [Conflict Resolver]
+}
+
+package "Network" {
+    [Transport (SSH/TCP)]
+    [Discovery]
+}
+
+' --- CLI ---
+CLI --> [Sync Manager]
+CLI --> [Config Manager]
+
+' --- Core связи ---
+[Sync Manager] --> [Sync Protocol]
+[Sync Manager] --> [Diff Engine]
+[Sync Manager] --> [Scheduler]
+
+' --- FS layer ---
+[Sync Manager] --> [File Scanner]
+[Sync Manager] --> [File Watcher]
+[File Scanner] --> [Index DB]
+[File Watcher] --> [Index DB]
+
+' --- Logic ---
+[Diff Engine] --> [Index DB]
+[Diff Engine] --> [Conflict Resolver]
+
+' --- Network ---
+[Sync Protocol] --> [Transport (SSH/TCP)]
+[Sync Protocol] --> [Discovery]
+
+' --- Peer interaction ---
+[Transport (SSH/TCP)] --> [Remote Peer]
+
+@enduml
