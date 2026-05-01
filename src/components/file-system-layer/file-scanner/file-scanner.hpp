@@ -18,8 +18,8 @@ class FileScanner {
    public:
     explicit FileScanner(const std::filesystem::path& path,
                          const std::unordered_set<std::filesystem::path>& ignoredPaths = {});
-    FileScanner(FileScanner&&) = default;
-    FileScanner& operator=(FileScanner&&) = default;
+    FileScanner(FileScanner&&) noexcept = default;
+    FileScanner& operator=(FileScanner&&) noexcept = default;
 
     std::vector<FileEntry> scan();
 
