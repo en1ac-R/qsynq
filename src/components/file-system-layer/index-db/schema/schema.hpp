@@ -1,3 +1,4 @@
+#pragma once
 #include "../connection/connection.hpp"
 
 class Schema {
