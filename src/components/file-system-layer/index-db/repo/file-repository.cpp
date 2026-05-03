@@ -9,5 +9,7 @@ void FileRepository::upsert(const FileEntry& entry) {
     stmt_.bind(1, entry.path);
     stmt_.bind(2, entry.size);
     stmt_.bind(3, entry.mtime);
-    stmt_.step();
+    if (stmt_.step() != DONE) {
+        throw std::runtime_error("stmt step error");
+    }
 }
