@@ -10,14 +10,18 @@ package "CLI / Interface" {
 
 package "Core" {
     [Sync Manager]
-    [Sync Protocol]
     [Scheduler]
 }
 
 package "File System Layer" {
     [File Scanner]
     [File Watcher]
-    [Index DB]
+}
+
+package "Index DB" {
+    [File Repository]
+    [Connection DB]
+    [Transaction]
 }
 
 package "Logic" {
@@ -30,30 +34,30 @@ package "Network" {
     [Discovery]
 }
 
-' --- CLI ---
+' CLI
 CLI --> [Sync Manager]
 CLI --> [Config Manager]
 
-' --- Core связи ---
-[Sync Manager] --> [Sync Protocol]
+' Core
+[Sync Manager] --> [File Scanner]
+[Sync Manager] --> [File Watcher]
 [Sync Manager] --> [Diff Engine]
 [Sync Manager] --> [Scheduler]
 
-' --- FS layer ---
-[Sync Manager] --> [File Scanner]
-[Sync Manager] --> [File Watcher]
-[File Scanner] --> [Index DB]
-[File Watcher] --> [Index DB]
+' FS → DB (только через Sync Manager)
+[File Scanner] --> [Sync Manager]
+[File Watcher] --> [Sync Manager]
 
-' --- Logic ---
-[Diff Engine] --> [Index DB]
+' DB access
+[Sync Manager] --> [File Repository]
+[File Repository] --> [Connection DB]
+[File Repository] --> [Transaction]
+
+' Logic
 [Diff Engine] --> [Conflict Resolver]
 
-' --- Network ---
-[Sync Protocol] --> [Transport (SSH/TCP)]
-[Sync Protocol] --> [Discovery]
-
-' --- Peer interaction ---
-[Transport (SSH/TCP)] --> [Remote Peer]
+' Network
+[Sync Manager] --> [Transport (SSH/TCP)]
+[Sync Manager] --> [Discovery]
 
 @enduml
