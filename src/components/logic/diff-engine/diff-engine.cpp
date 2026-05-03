@@ -9,6 +9,9 @@ std::vector<DiffOp> DiffEngine::diff(
     const std::unordered_map<std::filesystem::path, FileEntry>& oldState,
     const std::unordered_map<std::filesystem::path, FileEntry>& newState) {
     std::vector<DiffOp> result;
+
+    result.reserve(oldState.size() + newState.size());
+
     for (const auto& [path, entry] : newState) {
         auto oldIt = oldState.find(path);
         if (oldIt == oldState.end()) {
