@@ -3,7 +3,7 @@
 #include <iostream>
 #include <stdexcept>
 
-void StatementWrapper::stmtClose(sqlite3_stmt* stmt) noexcept {
+auto StatementWrapper::stmtClose(sqlite3_stmt* stmt) noexcept -> void {
     if (sqlite3_finalize(stmt) != SQLITE_OK) {
         std::cerr << "stmt close error: " << sqlite3_errmsg(sqlite3_db_handle(stmt)) << std::endl;
     }
@@ -11,7 +11,7 @@ void StatementWrapper::stmtClose(sqlite3_stmt* stmt) noexcept {
 
 StatementWrapper::StatementWrapper(sqlite3_stmt* stmt) : stmt_(stmt, stmtClose) {}
 
-StmtStepResult StatementWrapper::step() {
+auto StatementWrapper::step() -> StmtStepResult {
     int result = sqlite3_step(stmt_.get());
     switch (result) {
         case SQLITE_ROW:
@@ -24,7 +24,7 @@ StmtStepResult StatementWrapper::step() {
     }
 }
 
-void StatementWrapper::reset() {
+auto StatementWrapper::reset() -> void {
     if (sqlite3_reset(stmt_.get()) != SQLITE_OK) {
         throw std::runtime_error("stmt reset error: " +
                                  std::string(sqlite3_errmsg(sqlite3_db_handle(stmt_.get()))));
@@ -35,7 +35,7 @@ void StatementWrapper::reset() {
     }
 }
 
-void StatementWrapper::bind(int index) {
+auto StatementWrapper::bind(int index) -> void {
     if (index < 0) {
         throw std::runtime_error("stmt bind index error: index must be non-negative");
     }
@@ -45,7 +45,7 @@ void StatementWrapper::bind(int index) {
     }
 }
 
-void StatementWrapper::bind(int index, const std::string& value) {
+auto StatementWrapper::bind(int index, const std::string& value) -> void {
     if (index < 0) {
         throw std::runtime_error("stmt bind index error: index must be non-negative");
     }
@@ -58,7 +58,7 @@ void StatementWrapper::bind(int index, const std::string& value) {
     }
 }
 
-void StatementWrapper::bind(int index, uint64_t value) {
+auto StatementWrapper::bind(int index, uint64_t value) -> void {
     if (index < 0) {
         throw std::runtime_error("stmt bind index error: index must be non-negative");
     }

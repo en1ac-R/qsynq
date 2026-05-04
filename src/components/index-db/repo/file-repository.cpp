@@ -4,7 +4,7 @@ FileRepository::FileRepository(ConnectionDB& db)
     : db_(db),
       stmt_(db_.prepare("INSERT OR REPLACE INTO files (path, size, mtime) VALUES (?, ?, ?)")) {}
 
-void FileRepository::upsert(const FileEntry& entry) {
+auto FileRepository::upsert(const FileEntry& entry) -> void {
     stmt_.reset();
     stmt_.bind(1, entry.path);
     stmt_.bind(2, entry.size);

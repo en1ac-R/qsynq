@@ -9,17 +9,20 @@ class StatementWrapper {
    public:
     explicit StatementWrapper(sqlite3_stmt* stmt);
     StatementWrapper(const StatementWrapper&) = delete;
-    StatementWrapper& operator=(const StatementWrapper&) = delete;
+    auto operator=(const StatementWrapper&) -> StatementWrapper& = delete;
+    StatementWrapper(StatementWrapper&&) noexcept = default;
+    auto operator=(StatementWrapper&&) noexcept -> StatementWrapper& = default;
+    ~StatementWrapper() = default;
 
-    StmtStepResult step();
-    void reset();
+    auto step() -> StmtStepResult;
+    auto reset() -> void;
 
-    void bind(int index);
-    void bind(int index, const std::string& value);
-    void bind(int index, uint64_t value);
+    auto bind(int index) -> void;
+    auto bind(int index, const std::string& value) -> void;
+    auto bind(int index, uint64_t value) -> void;
 
    private:
-    static void stmtClose(sqlite3_stmt* stmt) noexcept;
+    static auto stmtClose(sqlite3_stmt* stmt) noexcept -> void;
 
    private:
     using UniquePointerStmt = std::unique_ptr<sqlite3_stmt, decltype(&stmtClose)>;

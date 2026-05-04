@@ -5,7 +5,7 @@
 #include <iostream>
 #include <stdexcept>
 
-void ConnectionDB::sqliteClose(sqlite3* db) noexcept {
+auto ConnectionDB::sqliteClose(sqlite3* db) noexcept -> void {
     if (!db) return;
 
     if (sqlite3_close(db) != SQLITE_OK) {
@@ -26,7 +26,7 @@ ConnectionDB::ConnectionDB(const std::filesystem::path& path) : db_(nullptr, sql
     db_.reset(rawDb);
 }
 
-void ConnectionDB::exec(const std::string& sql) {
+auto ConnectionDB::exec(const std::string& sql) -> void {
     char* errMsg = nullptr;
     int result = sqlite3_exec(db_.get(), sql.c_str(), nullptr, nullptr, &errMsg);
 
@@ -42,7 +42,7 @@ void ConnectionDB::exec(const std::string& sql) {
     }
 }
 
-StatementWrapper ConnectionDB::prepare(const std::string& sql) {
+auto ConnectionDB::prepare(const std::string& sql) -> StatementWrapper {
     sqlite3_stmt* stmt = nullptr;
 
     int result = sqlite3_prepare_v2(db_.get(), sql.c_str(), -1, &stmt, nullptr);

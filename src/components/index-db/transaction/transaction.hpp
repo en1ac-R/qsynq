@@ -5,11 +5,12 @@ class Transaction {
    public:
     explicit Transaction(ConnectionDB& connection);
     Transaction(const Transaction&) = delete;
-    Transaction& operator=(const Transaction&) = delete;
-
+    auto operator=(const Transaction&) -> Transaction& = delete;
+    Transaction(Transaction&&) noexcept = delete;
+    auto operator=(Transaction&&) -> Transaction& = delete;
     ~Transaction();
 
-    void commit();
+    auto commit() -> void;
 
    private:
     ConnectionDB& connection_;

@@ -10,17 +10,16 @@ class FileScanner {
    public:
     explicit FileScanner(const std::filesystem::path& path,
                          const std::unordered_set<std::filesystem::path>& ignoredPaths = {});
-    FileScanner(FileScanner&&) noexcept = default;
-    FileScanner& operator=(FileScanner&&) noexcept = default;
 
-    std::vector<FileEntry> scan();
+    auto scan() -> std::vector<FileEntry>;
 
    private:
-    void scanDirectory(const std::filesystem::path& dirPath,
-                       std::stack<std::filesystem::path>& dirStack,
-                       std::vector<FileEntry>& entries);
-    FileEntry scanFile(const std::filesystem::path& filePath);
-    bool isIgnored(const std::filesystem::path& filePath) const;
+    auto scanDirectory(const std::filesystem::path& dirPath,
+                       std::stack<std::filesystem::path>& dirStack, std::vector<FileEntry>& entries)
+        -> void;
+
+    auto scanFile(const std::filesystem::path& filePath) -> FileEntry;
+    auto isIgnored(const std::filesystem::path& filePath) const -> bool;
 
    private:
     std::filesystem::path rootPath_;

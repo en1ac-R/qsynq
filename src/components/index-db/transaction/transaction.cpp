@@ -6,7 +6,7 @@ Transaction::Transaction(ConnectionDB& connection) : connection_(connection) {
     connection_.exec("BEGIN TRANSACTION;");
 }
 
-void Transaction::commit() {
+auto Transaction::commit() -> void {
     if (isCommited_) return;
     connection_.exec("COMMIT");
     isCommited_ = true;

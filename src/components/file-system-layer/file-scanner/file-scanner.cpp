@@ -12,7 +12,7 @@ FileScanner::FileScanner(const std::filesystem::path& path,
                          const std::unordered_set<std::filesystem::path>& ignoredPaths)
     : rootPath_(path), ignoredPaths_(ignoredPaths) {}
 
-std::vector<FileEntry> FileScanner::scan() {
+auto FileScanner::scan() -> std::vector<FileEntry> {
     std::vector<FileEntry> entries;
     std::stack<std::filesystem::path> paths;
 
@@ -28,9 +28,9 @@ std::vector<FileEntry> FileScanner::scan() {
     return entries;
 }
 
-void FileScanner::scanDirectory(const std::filesystem::path& dirPath,
+auto FileScanner::scanDirectory(const std::filesystem::path& dirPath,
                                 std::stack<std::filesystem::path>& dirStack,
-                                std::vector<FileEntry>& fileEntries) {
+                                std::vector<FileEntry>& fileEntries) -> void {
     std::error_code ec;
     std::filesystem::directory_iterator it(dirPath, ec);
     std::filesystem::directory_iterator end;
@@ -65,9 +65,7 @@ void FileScanner::scanDirectory(const std::filesystem::path& dirPath,
     }
 }
 
-FileEntry FileScanner::scanFile(const std::filesystem::path& filePath) {
-    // Добавить работу с IndexDB
-
+auto FileScanner::scanFile(const std::filesystem::path& filePath) -> FileEntry {
     uint64_t size = static_cast<uint64_t>(std::filesystem::file_size(filePath));
 
     auto ftime = std::filesystem::last_write_time(filePath);
@@ -77,7 +75,7 @@ FileEntry FileScanner::scanFile(const std::filesystem::path& filePath) {
     return FileEntry{filePath, size, static_cast<uint64_t>(secs)};
 }
 
-bool FileScanner::isIgnored(const std::filesystem::path& filePath) const {
+auto FileScanner::isIgnored(const std::filesystem::path& filePath) const -> bool {
     const auto pathName = filePath.filename();
     if (pathName == "." || pathName == "..") return true;
 

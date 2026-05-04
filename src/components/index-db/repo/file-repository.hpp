@@ -7,9 +7,9 @@ class FileRepository {
    public:
     explicit FileRepository(ConnectionDB& db);
     FileRepository(const FileRepository&) = delete;
-    FileRepository& operator=(const FileRepository&) = delete;
+    auto operator=(const FileRepository&) -> FileRepository& = delete;
 
-    void upsert(const FileEntry& entry);
+    auto upsert(const FileEntry& entry) -> void;
 
    private:
     ConnectionDB& db_;

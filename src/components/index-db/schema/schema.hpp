@@ -3,5 +3,5 @@
 
 class Schema {
    public:
-    static void init(ConnectionDB& db);
+    static auto init(ConnectionDB& db) -> void;
 };
