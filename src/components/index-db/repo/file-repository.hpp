@@ -6,7 +6,8 @@
 #include <vector>
 
 #include "../../file-system-layer/file-scanner/types.hpp"
-
+#include "../../logic/diff-engine/types.hpp"
+#include "../connection/connection.hpp"
 class FileRepository {
    public:
     explicit FileRepository(SQLite::Database& db);
@@ -19,6 +20,9 @@ class FileRepository {
     auto loadSnapshot() -> std::vector<FileEntry>;
     auto upsert(const FileEntry& entry) -> void;
     auto remove(const std::filesystem::path& path) -> void;
+
+    // Должен ли он знать вообще про DiffOp??
+    auto apply(const std::vector<DiffOp>& ops) -> void;
 
    private:
     SQLite::Database& db_;
