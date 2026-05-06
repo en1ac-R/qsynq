@@ -66,13 +66,13 @@ auto FileScanner::scanDirectory(const std::filesystem::path& dirPath,
 }
 
 auto FileScanner::scanFile(const std::filesystem::path& filePath) -> FileEntry {
-    uint64_t size = static_cast<uint64_t>(std::filesystem::file_size(filePath));
+    std::int64_t size = static_cast<std::int64_t>(std::filesystem::file_size(filePath));
 
     auto ftime = std::filesystem::last_write_time(filePath);
 
     auto secs = std::chrono::duration_cast<std::chrono::seconds>(ftime.time_since_epoch()).count();
 
-    return FileEntry{filePath, size, static_cast<uint64_t>(secs)};
+    return FileEntry{filePath, size, static_cast<std::int64_t>(secs)};
 }
 
 auto FileScanner::isIgnored(const std::filesystem::path& filePath) const -> bool {
