@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SQLiteCpp/SQLiteCpp.h>
+
 #include "../../file-system-layer/file-scanner/types.hpp"
 #include "../connection/connection.hpp"
 
