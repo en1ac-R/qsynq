@@ -8,7 +8,7 @@
 
 class DiffEngine {
    public:
-    static std::vector<DiffOp> diff(
-        const std::unordered_map<std::filesystem::path, FileEntry>& oldState,
-        const std::unordered_map<std::filesystem::path, FileEntry>& newState);
+    static auto diff(const std::unordered_map<std::filesystem::path, FileEntry>& oldState,
+                     const std::unordered_map<std::filesystem::path, FileEntry>& newState)
+        -> std::vector<DiffOp>;
 };
