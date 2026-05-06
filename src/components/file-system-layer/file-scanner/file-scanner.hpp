@@ -5,7 +5,6 @@
 
 #include "types.hpp"
 
-// @TODO добавить поддержку IndexDB
 class FileScanner {
    public:
     explicit FileScanner(const std::filesystem::path& path,
