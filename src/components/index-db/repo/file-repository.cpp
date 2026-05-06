@@ -1,15 +1,53 @@
 #include "file-repository.hpp"
 
-FileRepository::FileRepository(ConnectionDB& db)
-    : db_(db),
-      stmt_(db_.prepare("INSERT OR REPLACE INTO files (path, size, mtime) VALUES (?, ?, ?)")) {}
+#include <SQLiteCpp/Statement.h>
+
+FileRepository::FileRepository(SQLite::Database& db) : db_(db) {}
+
+auto FileRepository::loadSnapshot() -> std::vector<FileEntry> {
+    std::vector<FileEntry> result;
+
+    SQLite::Statement query(db_, R"(
+           SELECT path, size, mtime
+           FROM files
+       )");
+
+    while (query.executeStep()) {
+        FileEntry entry;
+
+        entry.path = query.getColumn(0).getString();
+        entry.size = query.getColumn(1).getInt64();
+        entry.mtime = query.getColumn(2).getInt64();
+
+        result.emplace_back(std::move(entry));
+    }
+
+    return result;
+}
 
 auto FileRepository::upsert(const FileEntry& entry) -> void {
-    stmt_.reset();
-    stmt_.bind(1, entry.path);
-    stmt_.bind(2, entry.size);
-    stmt_.bind(3, entry.mtime);
-    if (stmt_.step() != DONE) {
-        throw std::runtime_error("stmt step error");
-    }
+    SQLite::Statement stmt(db_, R"(
+        INSERT INTO files(path, size, mtime)
+        VALUES (?, ?, ?)
+        ON CONFLICT(path) DO UPDATE SET
+            size = excluded.size,
+            mtime = excluded.mtime
+    )");
+
+    stmt.bind(1, entry.path.string());
+    stmt.bind(2, static_cast<std::int64_t>(entry.size));
+    stmt.bind(3, static_cast<std::int64_t>(entry.mtime));
+
+    stmt.exec();
+}
+
+auto FileRepository::remove(const std::filesystem::path& path) -> void {
+    SQLite::Statement stmt(db_, R"(
+        DELETE FROM files
+        WHERE path = ?
+    )");
+
+    stmt.bind(1, path.string());
+
+    stmt.exec();
 }

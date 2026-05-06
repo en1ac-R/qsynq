@@ -4,11 +4,11 @@
 
 struct FileEntry {
     std::filesystem::path path;
-    uint64_t size{0};
-    uint64_t mtime{0};  // Время последнего изменения в секундах
+    std::int64_t size{0};
+    std::int64_t mtime{0};  // Время последнего изменения в секундах
 
-    explicit FileEntry(std::filesystem::path path, uint64_t size, uint64_t mtime)
-        : path(std::move(path)), size(size), mtime(mtime) {}
+    explicit FileEntry(const std::filesystem::path& path, std::int64_t size, std::int64_t mtime)
+        : path(path), size(size), mtime(mtime) {}
     FileEntry() = default;
 
     bool operator==(const FileEntry& other) const {
