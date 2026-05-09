@@ -1,8 +1,5 @@
-#include <optional>
-
 #include "../file-system-layer/file-scanner/file-scanner.hpp"
 #include "../index-db/repo/file-repository.hpp"
-#include "../logic/diff-engine/types.hpp"
 
 class SyncManager {
    public:
