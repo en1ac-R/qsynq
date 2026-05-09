@@ -19,16 +19,16 @@ void SyncManager::run() {
     auto snapshot = fileRepository_.loadSnapshot();
 
     std::unordered_map<std::filesystem::path, FileEntry> currentState;
-    std::unordered_map<std::filesystem::path, FileEntry> lastSate;
+    std::unordered_map<std::filesystem::path, FileEntry> lastState;
 
     for (const auto& fileEntry : entries) {
         currentState.emplace(fileEntry.path, fileEntry);
     }
 
     for (const auto& fileEntry : snapshot) {
-        lastSate.emplace(fileEntry.path, fileEntry);
+        lastState.emplace(fileEntry.path, fileEntry);
     }
-    auto diffOps = DiffEngine::diff(lastSate, currentState);
+    auto diffOps = DiffEngine::diff(lastState, currentState);
 
     for (const auto& diffOp : diffOps) {
         switch (diffOp.type) {
