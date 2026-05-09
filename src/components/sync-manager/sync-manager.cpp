@@ -45,7 +45,7 @@ void SyncManager::run() {
                 if (diffOp.newEntry) repo.upsert(diffOp.newEntry.value());
                 break;
             case Delete:
-                if (diffOp.oldEntry) repo.upsert(diffOp.oldEntry.value());
+                if (diffOp.oldEntry) repo.remove(diffOp.oldEntry.value().path);
         }
     }
 }
