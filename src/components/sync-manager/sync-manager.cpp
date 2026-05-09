@@ -3,28 +3,20 @@
 #include <SQLiteCpp/Database.h>
 #include <sys/types.h>
 
-#include "../index-db/initializer/schema.hpp"
 #include "../logic/diff-engine/diff-engine.hpp"
-
-const std::filesystem::path PATH_TO_DB = "/";
 
 SyncManager::SyncManager(FileScanner& fileScanner, FileRepository& fileRepository)
     : fileScanner_(fileScanner), fileRepository_(fileRepository) {}
 
 void SyncManager::run() {
-    SQLite::Database db(PATH_TO_DB);
-    FileRepository repo(db);
-
     auto entries = fileScanner_.scan();
     if (isFirstRun_) {
-        DatabaseInitializer::init(db);
-
-        repo.apply(entries);
+        fileRepository_.apply(entries);
         isFirstRun_ = false;
         return;
     }
 
-    auto snapshot = repo.loadSnapshot();
+    auto snapshot = fileRepository_.loadSnapshot();
 
     std::unordered_map<std::filesystem::path, FileEntry> currentState;
     std::unordered_map<std::filesystem::path, FileEntry> lastSate;
@@ -42,10 +34,10 @@ void SyncManager::run() {
         switch (diffOp.type) {
             case Create:
             case Modify:
-                if (diffOp.newEntry) repo.upsert(diffOp.newEntry.value());
+                if (diffOp.newEntry) fileRepository_.upsert(diffOp.newEntry.value());
                 break;
             case Delete:
-                if (diffOp.oldEntry) repo.remove(diffOp.oldEntry.value().path);
+                if (diffOp.oldEntry) fileRepository_.remove(diffOp.oldEntry.value().path);
         }
     }
 }
