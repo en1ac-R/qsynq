@@ -10,5 +10,4 @@ class SyncManager {
    private:
     FileScanner& fileScanner_;
     FileRepository& fileRepository_;
-    bool isFirstRun_ = true;
 };

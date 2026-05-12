@@ -10,13 +10,12 @@ SyncManager::SyncManager(FileScanner& fileScanner, FileRepository& fileRepositor
 
 void SyncManager::run() {
     auto entries = fileScanner_.scan();
-    if (isFirstRun_) {
-        fileRepository_.apply(entries);
-        isFirstRun_ = false;
-        return;
-    }
 
     auto snapshot = fileRepository_.loadSnapshot();
+    if (snapshot.empty()) {
+        fileRepository_.apply(entries);
+        return;
+    }
 
     std::unordered_map<std::filesystem::path, FileEntry> currentState;
     std::unordered_map<std::filesystem::path, FileEntry> lastState;
