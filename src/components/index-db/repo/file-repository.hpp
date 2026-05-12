@@ -20,6 +20,8 @@ class FileRepository {
     auto upsert(const FileEntry& entry) -> void;
     auto remove(const std::filesystem::path& path) -> void;
 
+    auto apply(const std::vector<FileEntry>& ops) -> void;
+
    private:
     SQLite::Database& db_;
 };

@@ -11,4 +11,5 @@ class DiffEngine {
     static auto diff(const std::unordered_map<std::filesystem::path, FileEntry>& oldState,
                      const std::unordered_map<std::filesystem::path, FileEntry>& newState)
         -> std::vector<DiffOp>;
+    static auto diffToFileEntry(const std::vector<DiffOp>& diffs) -> std::vector<DiffOp>;
 };
