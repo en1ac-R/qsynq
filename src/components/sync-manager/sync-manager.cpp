@@ -31,12 +31,12 @@ void SyncManager::run() {
 
     for (const auto& diffOp : diffOps) {
         switch (diffOp.type) {
-            case Create:
-            case Modify:
+            case DiffType::Create:
+            case DiffType::Modify:
                 if (diffOp.newEntry) fileRepository_.upsert(diffOp.newEntry.value());
                 break;
-            case Delete:
-                if (diffOp.oldEntry) fileRepository_.remove(diffOp.oldEntry.value().path);
+            case DiffType::Delete:
+                if (diffOp.oldEntry) fileRepository_.remove(diffOp.path);
         }
     }
 }
