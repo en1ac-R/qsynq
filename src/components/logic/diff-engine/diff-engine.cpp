@@ -5,7 +5,6 @@
 
 #include "types.hpp"
 
-// Возможно стоит выпилить из FileEntry path??
 auto DiffEngine::diff(const std::unordered_map<std::filesystem::path, FileEntry>& oldState,
                       const std::unordered_map<std::filesystem::path, FileEntry>& newState)
     -> std::vector<DiffOp> {
