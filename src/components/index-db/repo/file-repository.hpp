@@ -1,11 +1,11 @@
 #pragma once
 
 #include <SQLiteCpp/Database.h>
-#include <SQLiteCpp/SQLiteCpp.h>
 
+#include <filesystem>
 #include <vector>
 
-#include "../../file-system-layer/file-scanner/types.hpp"
+#include "../../common/file-entry.hpp"
 
 class FileRepository {
    public:

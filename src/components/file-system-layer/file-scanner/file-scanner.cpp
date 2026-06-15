@@ -1,7 +1,5 @@
 #include "file-scanner.hpp"
 
-#include <sys/stat.h>
-
 #include <chrono>
 #include <cstdint>
 #include <filesystem>

@@ -1,10 +1,19 @@
-cmake_minimum_required(VERSION 3.16)
-project(qsynq)
+foreach(QSYNQ_VCPKG_PREFIX
+    "${CMAKE_SOURCE_DIR}/build/vcpkg_installed/x64-linux"
+    "${CMAKE_CURRENT_SOURCE_DIR}/build/vcpkg_installed/x64-linux"
+)
+    if(EXISTS "${QSYNQ_VCPKG_PREFIX}")
+        list(APPEND CMAKE_PREFIX_PATH "${QSYNQ_VCPKG_PREFIX}")
+    endif()
+endforeach()
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+find_package(SQLiteCpp CONFIG REQUIRED)
 
-find_package(SQLiteCpp REQUIRED)
-
-add_library(repo STATIC components/index-db/repo/file-repository.cpp)
-target_link_libraries(repo PRIVATE SQLiteCpp )
+add_subdirectory(components/common)
+add_subdirectory(components/file-system-layer)
+add_subdirectory(components/index-db)
+add_subdirectory(components/logic)
+add_subdirectory(components/network)
+add_subdirectory(components/sync-manager)
+add_subdirectory(daemon)
+add_subdirectory(cli)

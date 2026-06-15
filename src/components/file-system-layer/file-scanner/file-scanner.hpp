@@ -1,3 +1,5 @@
+#pragma once
+
 #include <filesystem>
 #include <stack>
 #include <unordered_set>
