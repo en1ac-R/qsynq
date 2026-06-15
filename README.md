@@ -1,191 +1,174 @@
 # qsynq
 
-**qsynq** — система синхронизации файлов в одноранговой (P2P) сети, предназначенная для операционных систем Linux. Проект разрабатывается как кроссплатформенное решение для автоматического обнаружения изменений файловой системы и синхронизации данных между узлами сети без использования централизованного сервера.
+**qsynq** — учебная система синхронизации файлов для Linux. Проект разделён на C++ daemon `qsynqd`, Python CLI `qsynq` и набор C++ компонентов для файлового слоя, индекса SQLite, diff-логики, сети и менеджера синхронизации.
+
+CLI и daemon общаются локально через Unix domain socket. Формат сообщений — JSON.
 
 ## Возможности
 
-- автоматическое обнаружение изменений файлов;
-    
-- синхронизация каталогов между узлами сети;
-    
-- работа в одноранговой архитектуре (P2P);
-    
-- автоматическое обнаружение узлов в локальной сети;
-    
-- передача файлов по TCP-соединению;
-    
-- поддержка работы в фоновом режиме;
-    
-- хранение информации о состоянии файлов в базе данных SQLite;
-    
-- интерфейс командной строки (CLI);
-    
-- поддержка операционных систем Linux;
-    
-- возможность последующего портирования на архитектуру Эльбрус (E2K).
-    
+- обход файловой системы и формирование snapshot;
+- отслеживание изменений через `inotify`;
+- хранение состояния файлов в SQLite;
+- вычисление diff между снимками состояния;
+- TCP transport для передачи файлов;
+- daemon-процесс `qsynqd`;
+- Python CLI `qsynq`;
+- локальный IPC через Unix-socket и JSON.
 
----
+## Бинарники
 
-## Архитектура
+После сборки CMake кладёт исполняемые файлы в `build/bin`:
 
-Система состоит из следующих основных компонентов:
+| Файл | Тип | Назначение |
+| --- | --- | --- |
+| `build/bin/qsynqd` | C++ executable | Фоновый daemon. Слушает Unix-socket и обрабатывает JSON-команды. |
+| `build/bin/qsynq` | Python script | CLI-клиент. Отправляет JSON-команды daemon-у. |
 
-### SyncManager
+Исходный Python CLI находится в `scripts/qsynq` и при сборке копируется в `build/bin/qsynq`.
 
-Координирует процесс синхронизации:
+## Исходники
 
-- обработка событий файловой системы;
-    
-- формирование задач синхронизации;
-    
-- взаимодействие с транспортным уровнем.
-    
+Основные директории проекта:
 
-### FileScanner
+```text
+.
+├── CMakeLists.txt              # главный CMake проекта
+├── vcpkg.json                  # зависимости C/C++ уровня
+├── scripts/
+│   └── qsynq                   # Python CLI, копируется в build/bin
+├── src/
+│   ├── CMakeLists.txt          # подключает subdirectory компонентов
+│   ├── daemon/
+│   │   └── qsynqd.cpp          # entrypoint daemon-а
+│   ├── cli/
+│   │   └── CMakeLists.txt      # CMake target для копирования CLI
+│   └── components/
+│       ├── common/             # общие типы, например FileEntry
+│       ├── file-system-layer/  # FileScanner и FileWatcher
+│       ├── index-db/           # SQLite repository и schema initializer
+│       ├── logic/              # DiffEngine
+│       ├── network/            # TCP transport
+│       ├── sync-manager/       # координация scanner/repository/diff
+│       └── cli/                # модульные Python-исходники CLI
+├── UML/
+│   ├── componentDiagram.puml
+│   └── useCaseDiagram.puml
+└── build/                      # артефакты сборки, игнорируются git
+```
 
-Выполняет:
+Сборка сделана через `add_subdirectory`: у каждого C++ компонента есть свой `CMakeLists.txt`, а главный CMake подключает `src`.
 
-- обход файловой системы;
-    
-- получение метаданных файлов;
-    
-- формирование снимков состояния (snapshot).
-    
+## Зависимости
 
-### FileWatcher
+- Linux;
+- C++20 compiler;
+- CMake 3.16+;
+- Python 3;
+- SQLiteCpp;
+- SQLite3.
 
-Отслеживает изменения файловой системы с использованием механизма inotify:
+Зависимость `sqlitecpp` указана в `vcpkg.json`. Если пакет установлен через vcpkg, CMake найдёт его через toolchain/prefix. В текущей локальной схеме также поддержан fallback на уже установленный `src/build/vcpkg_installed/x64-linux`.
 
-- создание файлов;
-    
-- удаление файлов;
-    
-- изменение содержимого;
-    
-- перемещение файлов.
-    
-
-### DiscoveryService
-
-Отвечает за обнаружение узлов сети посредством широковещательных (broadcast) сообщений.
-
-### Transport
-
-Обеспечивает передачу данных между узлами:
-
-- TCP-соединения;
-    
-- обработка запросов на получение файлов;
-    
-- передача метаданных.
-    
-
-### Storage
-
-Подсистема хранения данных на базе SQLite:
-
-- информация о синхронизируемых каталогах;
-    
-- снимки состояния файлов;
-    
-- конфигурация системы.
-    
-
----
-
-## Установка
-
-### Сборка
+## Сборка
 
 ```bash
-git clone https://github.com/example/qsynq.git
-cd qsynq
-
-cmake -B build
+cmake -S . -B build
 cmake --build build
 ```
 
-### Зависимости
+После этого доступны:
 
-- C++20
-    
-- CMake 3.20+
-    
-- SQLite3
-    
-- Linux Kernel 5.x+
-    
-- Clang 17+
-    
-
----
+```bash
+build/bin/qsynqd
+build/bin/qsynq
+```
 
 ## Использование
 
-### Добавление директории
+Запустить daemon:
 
 ```bash
-qsynq add /home/user/Documents
+build/bin/qsynqd
 ```
 
-### Просмотр состояния
+В другом терминале выполнить CLI-команду:
 
 ```bash
-qsynq status
+build/bin/qsynq ping
+build/bin/qsynq status
+build/bin/qsynq add /home/user/Documents
+build/bin/qsynq config
+build/bin/qsynq stop
 ```
 
-### Просмотр конфигурации
+CLI может сам стартовать daemon, если `qsynqd` доступен рядом с ним или в `PATH`:
 
 ```bash
-qsynq config
+build/bin/qsynq start
 ```
 
-### Запуск фонового сервиса
+## Unix-Socket API
+
+По умолчанию daemon слушает:
+
+```text
+/tmp/qsynqd.sock
+```
+
+Путь можно переопределить переменной окружения:
 
 ```bash
-qsynq start --config /etc/qsynq/qsynq.conf
+QSYNQ_SOCKET=/tmp/my-qsynqd.sock build/bin/qsynqd
+QSYNQ_SOCKET=/tmp/my-qsynqd.sock build/bin/qsynq status
 ```
 
+Пример JSON-запроса:
 
----
-
-## Параметры командной строки
-
-| Флаг        | Описание                              |
-| ----------- | ------------------------------------- |
-| --interval  | Интервал автоматической синхронизации |
-| --recursive | Рекурсивная обработка директорий      |
-| --config    | Используемый конфигурационный файл    |
-| --verbose   | Подробный вывод                       |
-| --help      | Справка                               |
-| --version   | Версия программы                      |
-
----
-
-## Конфигурационный файл
-
-Пример файла `qsynq.conf`:
-
-```ini
-node_name = node-one
-recursive = true
-listen_port = 5000
-log_file = /path/to/log/file
-allowed_peers = *
+```json
+{"command": "status"}
 ```
 
----
+Пример JSON-ответа:
+
+```json
+{
+  "ok": true,
+  "state": "running",
+  "folders": []
+}
+```
+
+Текущие команды daemon-а:
+
+| Команда | Payload | Назначение |
+| --- | --- | --- |
+| `ping` | `{"command":"ping"}` | Проверка доступности daemon-а. |
+| `status` | `{"command":"status"}` | Состояние daemon-а и список добавленных путей. |
+| `add` | `{"command":"add","path":"/path"}` | Добавить путь в текущую сессию daemon-а. |
+| `config` | `{"command":"config"}` | Показать активный Unix-socket. |
+| `stop` | `{"command":"stop"}` | Остановить daemon. |
+
+## Git Ignore
+
+Артефакты сборки не должны попадать в репозиторий. В `.gitignore` уже добавлены:
+
+- `build/`;
+- `src/build/`;
+- CMake cache/files;
+- generated binaries;
+- Python cache.
 
 ## Системный сервис
 
-Для работы в фоновом режиме используется демон:
+Планируемый production-сценарий — запуск `qsynqd` как systemd-сервиса:
 
 ```bash
 systemctl start qsynqd
 systemctl stop qsynqd
 systemctl status qsynqd
 ```
+
+Unit-файл пока не входит в репозиторий.
 
 ## Лицензия
 

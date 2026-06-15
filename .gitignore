@@ -1,3 +1,19 @@
-/src/build
-.zed/
 .cache/
+.zed/
+
+# CMake build outputs
+/build/
+/src/build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+Makefile
+
+# Generated binaries
+/bin/
+
+# Python runtime artifacts
+__pycache__/
+*.py[cod]

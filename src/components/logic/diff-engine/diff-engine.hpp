@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "../../file-system-layer/file-scanner/types.hpp"
+#include "../../common/file-entry.hpp"
 #include "types.hpp"
 
 class DiffEngine {

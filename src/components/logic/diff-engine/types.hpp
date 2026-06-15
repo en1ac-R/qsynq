@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <optional>
 
-#include "../../file-system-layer/file-scanner/types.hpp"
+#include "../../common/file-entry.hpp"
 
 enum DiffType { Create, Modify, Delete };
 

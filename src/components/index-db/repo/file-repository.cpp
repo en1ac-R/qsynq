@@ -1,6 +1,7 @@
 #include "file-repository.hpp"
 
 #include <SQLiteCpp/Statement.h>
+#include <SQLiteCpp/Transaction.h>
 
 FileRepository::FileRepository(SQLite::Database& db) : db_(db) {}
 
@@ -50,4 +51,14 @@ auto FileRepository::remove(const std::filesystem::path& path) -> void {
     stmt.bind(1, path.string());
 
     stmt.exec();
+}
+
+auto FileRepository::apply(const std::vector<FileEntry>& entries) -> void {
+    SQLite::Transaction transaction(db_);
+
+    for (const auto& entry : entries) {
+        upsert(entry);
+    }
+
+    transaction.commit();
 }

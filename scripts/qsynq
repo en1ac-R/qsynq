@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+
+import argparse
+import json
+import os
+import socket
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+
+DEFAULT_SOCKET = "/tmp/qsynqd.sock"
+
+
+def socket_path() -> str:
+    return os.environ.get("QSYNQ_SOCKET", DEFAULT_SOCKET)
+
+
+def daemon_path() -> str:
+    env_path = os.environ.get("QSYNQD")
+    if env_path:
+        return env_path
+
+    sibling = Path(__file__).resolve().with_name("qsynqd")
+    if sibling.exists():
+        return str(sibling)
+
+    return "qsynqd"
+
+
+def request(payload: dict) -> dict:
+    data = json.dumps(payload).encode("utf-8") + b"\n"
+
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+        client.connect(socket_path())
+        client.sendall(data)
+        response = client.recv(1024 * 1024)
+
+    return json.loads(response.decode("utf-8"))
+
+
+def print_response(response: dict) -> int:
+    print(json.dumps(response, ensure_ascii=False, indent=2))
+    return 0 if response.get("ok") else 1
+
+
+def start_daemon(args: argparse.Namespace) -> int:
+    try:
+        response = request({"command": "ping"})
+        return print_response({"ok": True, "message": "daemon already running", "daemon": response})
+    except (ConnectionRefusedError, FileNotFoundError, PermissionError, OSError):
+        pass
+
+    command = [daemon_path()]
+    env = os.environ.copy()
+    if args.socket:
+        env["QSYNQ_SOCKET"] = args.socket
+
+    subprocess.Popen(command, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    for _ in range(30):
+        try:
+            response = request({"command": "ping"})
+            return print_response({"ok": True, "message": "daemon started", "daemon": response})
+        except (ConnectionRefusedError, FileNotFoundError, PermissionError, OSError):
+            time.sleep(0.1)
+
+    return print_response({"ok": False, "error": "daemon did not start"})
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(prog="qsynq")
+    parser.add_argument("--socket", help="Unix socket path")
+
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    add_parser = subparsers.add_parser("add")
+    add_parser.add_argument("path")
+
+    subparsers.add_parser("status")
+    subparsers.add_parser("config")
+    subparsers.add_parser("stop")
+    subparsers.add_parser("ping")
+    subparsers.add_parser("start")
+
+    args = parser.parse_args()
+
+    if args.socket:
+        os.environ["QSYNQ_SOCKET"] = args.socket
+
+    if args.command == "start":
+        return start_daemon(args)
+
+    payload = {"command": args.command}
+    if args.command == "add":
+        payload["path"] = args.path
+
+    try:
+        return print_response(request(payload))
+    except FileNotFoundError:
+        return print_response({"ok": False, "error": f"daemon socket not found: {socket_path()}"})
+    except ConnectionRefusedError:
+        return print_response({"ok": False, "error": f"daemon is not accepting connections: {socket_path()}"})
+    except PermissionError:
+        return print_response({"ok": False, "error": f"permission denied for daemon socket: {socket_path()}"})
+    except json.JSONDecodeError as error:
+        return print_response({"ok": False, "error": f"invalid daemon response: {error}"})
+
+
+if __name__ == "__main__":
+    sys.exit(main())

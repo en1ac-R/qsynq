@@ -1,7 +1,7 @@
 #include "sync-manager.hpp"
 
-#include <SQLiteCpp/Database.h>
-#include <sys/types.h>
+#include <filesystem>
+#include <unordered_map>
 
 #include "../logic/diff-engine/diff-engine.hpp"
 

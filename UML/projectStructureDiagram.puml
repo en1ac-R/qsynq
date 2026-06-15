@@ -1,0 +1,140 @@
+@startuml
+left to right direction
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+title qsynq project structure
+
+folder "qsynq/" as root {
+    artifact "README.md" as readme
+    artifact "CMakeLists.txt" as root_cmake
+    artifact "vcpkg.json" as vcpkg
+
+    folder "scripts/" as scripts {
+        artifact "qsynq\nPython CLI source" as cli_script
+    }
+
+    folder "src/" as src {
+        artifact "CMakeLists.txt" as src_cmake
+
+        folder "daemon/" as daemon_dir {
+            artifact "qsynqd.cpp" as daemon_src
+            artifact "CMakeLists.txt" as daemon_cmake
+        }
+
+        folder "cli/" as cli_cmake_dir {
+            artifact "CMakeLists.txt\ncopies scripts/qsynq" as cli_cmake
+        }
+
+        folder "components/" as components {
+            folder "common/" as common {
+                artifact "file-entry.hpp" as file_entry
+                artifact "CMakeLists.txt" as common_cmake
+            }
+
+            folder "file-system-layer/" as fs_layer {
+                folder "file-scanner/" as scanner {
+                    artifact "file-scanner.hpp/.cpp" as scanner_src
+                    artifact "types.hpp" as scanner_types
+                    artifact "CMakeLists.txt" as scanner_cmake
+                }
+
+                folder "file-watcher/" as watcher {
+                    artifact "file-watcher.hpp/.cpp" as watcher_src
+                    artifact "CMakeLists.txt" as watcher_cmake
+                }
+            }
+
+            folder "index-db/" as index_db {
+                folder "initializer/" as initializer {
+                    artifact "schema.hpp/.cpp" as schema_src
+                }
+
+                folder "repo/" as repo {
+                    artifact "file-repository.hpp/.cpp" as repo_src
+                }
+
+                artifact "CMakeLists.txt" as index_cmake
+            }
+
+            folder "logic/" as logic {
+                folder "diff-engine/" as diff_engine {
+                    artifact "diff-engine.hpp/.cpp" as diff_src
+                    artifact "types.hpp" as diff_types
+                    artifact "CMakeLists.txt" as diff_cmake
+                }
+            }
+
+            folder "network/" as network {
+                artifact "network.hpp/.cpp" as network_src
+
+                folder "transport/" as transport {
+                    artifact "transport-client.hpp/.cpp" as transport_client
+                    artifact "transport-server.hpp/.cpp" as transport_server
+                    artifact "transport-message.hpp/.cpp" as transport_message
+                    artifact "CMakeLists.txt" as transport_cmake
+                }
+            }
+
+            folder "sync-manager/" as sync_manager {
+                artifact "sync-manager.hpp/.cpp" as sync_src
+                artifact "CMakeLists.txt" as sync_cmake
+            }
+
+            folder "cli/" as cli_modules {
+                artifact "qsynq.py" as cli_py
+                artifact "parser.py" as parser_py
+                artifact "commands.py" as commands_py
+                artifact "socket_client.py" as socket_client_py
+                artifact "validator.py" as validator_py
+                artifact "constants.py" as constants_py
+            }
+        }
+    }
+
+    folder "UML/" as uml {
+        artifact "componentDiagram.puml" as component_uml
+        artifact "useCaseDiagram.puml" as usecase_uml
+        artifact "projectStructureDiagram.puml" as project_uml
+    }
+
+    folder "build/bin/\n(generated, gitignored)" as build_bin {
+        artifact "qsynqd\nC++ daemon" as qsynqd_bin
+        artifact "qsynq\nPython CLI copy" as qsynq_bin
+    }
+}
+
+root_cmake --> src_cmake : add_subdirectory(src)
+src_cmake --> common_cmake
+src_cmake --> scanner_cmake
+src_cmake --> watcher_cmake
+src_cmake --> index_cmake
+src_cmake --> diff_cmake
+src_cmake --> transport_cmake
+src_cmake --> sync_cmake
+src_cmake --> daemon_cmake
+src_cmake --> cli_cmake
+
+vcpkg ..> index_db : SQLiteCpp
+
+scanner_src ..> file_entry : uses FileEntry
+repo_src ..> file_entry : uses FileEntry
+diff_src ..> file_entry : uses FileEntry
+sync_src --> scanner_src
+sync_src --> repo_src
+sync_src --> diff_src
+daemon_src --> sync_src
+daemon_src --> transport
+
+cli_cmake --> cli_script : copy
+daemon_cmake --> daemon_src : build qsynqd
+cli_script --> qsynqd_bin : JSON over Unix socket
+qsynq_bin --> qsynqd_bin : JSON over Unix socket
+
+daemon_cmake --> qsynqd_bin : output
+cli_cmake --> qsynq_bin : output
+
+project_uml ..> readme : documents structure
+
+@enduml
