@@ -63,11 +63,17 @@ CLI и daemon общаются локально через Unix domain socket. �
 - Linux;
 - C++20 compiler;
 - CMake 3.16+;
-- Python 3;
+- Python 3.12 или новее;
 - SQLiteCpp;
 - SQLite3.
 
-Зависимость `sqlitecpp` указана в `vcpkg.json`. Если пакет установлен через vcpkg, CMake найдёт его через toolchain/prefix. В текущей локальной схеме также поддержан fallback на уже установленный `src/build/vcpkg_installed/x64-linux`.
+Python нужен для CLI `qsynq`. При конфигурации проекта CMake проверяет наличие интерпретатора через:
+
+```cmake
+find_package(Python3 3.12 REQUIRED COMPONENTS Interpreter)
+```
+
+Зависимость `sqlitecpp` указана в `vcpkg.json`. Если пакет установлен через vcpkg, CMake найдёт его через toolchain/prefix. Python не устанавливается через `vcpkg.json`; его нужно иметь в системе отдельно. В текущей локальной схеме также поддержан fallback на уже установленный `src/build/vcpkg_installed/x64-linux`.
 
 ## Сборка
 
