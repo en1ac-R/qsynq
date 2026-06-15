@@ -1,3 +1,5 @@
+find_package(Python3 3.12 REQUIRED COMPONENTS Interpreter)
+
 set(QSYNQ_CLI_OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/qsynq)
 
 add_custom_command(
